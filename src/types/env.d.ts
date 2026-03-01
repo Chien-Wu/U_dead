@@ -3,6 +3,7 @@ declare module '@env' {
   export const GOOGLE_CLIENT_ID_IOS: string;
   export const GOOGLE_CLIENT_ID_ANDROID: string;
   export const GOOGLE_CLIENT_ID_WEB: string;
+  export const GOOGLE_REVERSED_CLIENT_ID: string;
   export const EXPO_PROJECT_ID: string;
   export const STATUS_POLL_INTERVAL: string;
   export const LONG_PRESS_DURATION: string;

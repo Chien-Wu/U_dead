@@ -22,7 +22,15 @@ export const FirstContactWelcomeScreen = () => {
   const theme = isDark ? Colors.dark : Colors.light;
 
   const handleAddContact = () => {
-    (navigation.navigate as any)('AddContact');
+    (navigation.navigate as any)('AddContact', {
+      onSave: () => {
+        // After saving first contact, close both modals and go to Home
+        navigation.goBack(); // Close AddContact
+        setTimeout(() => {
+          navigation.goBack(); // Close FirstContactWelcome
+        }, 100);
+      },
+    });
   };
 
   return (

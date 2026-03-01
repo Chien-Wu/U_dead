@@ -1,65 +1,111 @@
 /**
  * OAuth Authentication Service
- * Handles Google and Apple Sign-In flows
+ * Handles Google and Apple Sign-In flows using native SDKs
  */
 
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
-import { Platform } from 'react-native';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import {
   GOOGLE_CLIENT_ID_IOS,
-  GOOGLE_CLIENT_ID_ANDROID,
   GOOGLE_CLIENT_ID_WEB,
 } from '@env';
 
-WebBrowser.maybeCompleteAuthSession();
-
-export const getGoogleClientId = () => {
-  if (Platform.OS === 'ios') return GOOGLE_CLIENT_ID_IOS;
-  if (Platform.OS === 'android') return GOOGLE_CLIENT_ID_ANDROID;
-  return GOOGLE_CLIENT_ID_WEB;
+/**
+ * Configure Google Sign-In
+ * Must be called before any sign-in attempts
+ */
+export const configureGoogleSignIn = () => {
+  GoogleSignin.configure({
+    // Web Client ID is required for backend token verification
+    webClientId: GOOGLE_CLIENT_ID_WEB,
+    // iOS Client ID (optional, uses reversed client ID from Info.plist if not provided)
+    iosClientId: GOOGLE_CLIENT_ID_IOS,
+    // Request offline access to get refresh token
+    offlineAccess: true,
+    // Scopes for user profile and email
+    scopes: ['profile', 'email'],
+  });
 };
 
 /**
- * Initiate Google Sign-In flow
- * Returns ID token to exchange with backend
+ * Sign in with Google using native SDK
+ * Returns ID token to send to backend for verification
+ * @returns Object with idToken and user info, or null if failed/cancelled
  */
-export const signInWithGoogle = async (): Promise<string | null> => {
+export const signInWithGoogle = async (): Promise<{
+  idToken: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    photo?: string;
+  };
+} | null> => {
   try {
-    const redirectUri = AuthSession.makeRedirectUri({
-      scheme: 'com.udead.app',
-      preferLocalhost: true,
-    });
+    // Check if Google Play Services are available (mainly for Android)
+    await GoogleSignin.hasPlayServices();
 
-    const discovery = {
-      authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-      tokenEndpoint: 'https://oauth2.googleapis.com/token',
-    };
+    // Sign in and get user info
+    const response = await GoogleSignin.signIn();
 
-    const [request, response, promptAsync] = AuthSession.useAuthRequest(
-      {
-        clientId: getGoogleClientId(),
-        redirectUri,
-        scopes: ['openid', 'profile', 'email'],
-        responseType: AuthSession.ResponseType.IdToken,
-      },
-      discovery
-    );
+    // Extract ID token (this is what we send to backend)
+    const idToken = response.data?.idToken;
 
-    if (!request) return null;
-
-    const result = await promptAsync();
-
-    if (result.type === 'success') {
-      const { id_token } = result.params;
-      return id_token;
+    if (!idToken) {
+      console.error('No ID token received from Google');
+      return null;
     }
 
-    return null;
-  } catch (error) {
-    console.error('Google Sign-In Error:', error);
-    return null;
+    const userData = response.data?.user;
+
+    if (!userData) {
+      console.error('No user data received from Google');
+      return null;
+    }
+
+    return {
+      idToken,
+      user: {
+        id: userData.id,
+        email: userData.email,
+        name: userData.name || '',
+        photo: userData.photo || undefined,
+      },
+    };
+  } catch (error: any) {
+    // Handle specific error codes
+    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      console.log('User cancelled Google Sign-In');
+      return null;
+    } else if (error.code === statusCodes.IN_PROGRESS) {
+      console.log('Google Sign-In already in progress');
+      return null;
+    } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      console.error('Google Play Services not available');
+      return null;
+    } else {
+      console.error('Google Sign-In error:', error);
+      return null;
+    }
   }
+};
+
+/**
+ * Sign out from Google
+ */
+export const signOutFromGoogle = async (): Promise<void> => {
+  try {
+    await GoogleSignin.signOut();
+  } catch (error) {
+    console.error('Error signing out from Google:', error);
+  }
+};
+
+/**
+ * Check if user is currently signed in to Google
+ */
+export const checkIfSignedIn = async (): Promise<boolean> => {
+  const isSignedIn = await GoogleSignin.hasPreviousSignIn();
+  return isSignedIn;
 };
 
 /**

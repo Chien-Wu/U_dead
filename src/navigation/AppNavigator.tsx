@@ -32,7 +32,8 @@ export const AppNavigator = () => {
     try {
       const contacts = await api.getContacts();
 
-      if (contacts.length === 0) {
+      // Handle empty, null, or undefined contacts
+      if (!contacts || contacts.length === 0) {
         // Navigate to FirstContactWelcome screen
         navigationRef.current?.navigate('FirstContactWelcome');
       }

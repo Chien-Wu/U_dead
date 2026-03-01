@@ -4,7 +4,7 @@
  * Minimalist design with centered authentication options
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { Colors } from '../utils/colors';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { ENABLE_MOCK_AUTH } from '@env';
+import { configureGoogleSignIn, signInWithGoogle } from '../services/auth';
 
 export const WelcomeScreen = () => {
   const colorScheme = useColorScheme();
@@ -25,6 +26,11 @@ export const WelcomeScreen = () => {
   const theme = isDark ? Colors.dark : Colors.light;
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Configure Google Sign-In when component mounts
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -36,15 +42,20 @@ export const WelcomeScreen = () => {
         const { accessToken, user } = await api.loginWithGoogle('test-token');
         await login(accessToken, user);
       } else {
-        // Production: Real OAuth flow
-        Alert.alert('Not Implemented', 'Real Google OAuth requires native build');
-        // TODO: Implement real Google OAuth using expo-auth-session
-        // const { signInWithGoogle } = require('../services/auth');
-        // const idToken = await signInWithGoogle();
-        // if (idToken) {
-        //   const { accessToken, user } = await api.loginWithGoogle(idToken);
-        //   await login(accessToken, user);
-        // }
+        // Production: Real Google OAuth with native SDK
+        const result = await signInWithGoogle();
+
+        if (result) {
+          // Successfully got ID token from Google
+          const { idToken } = result;
+
+          // Send ID token to backend for verification
+          const { accessToken, user } = await api.loginWithGoogle(idToken);
+          await login(accessToken, user);
+        } else {
+          // User cancelled or error occurred (already logged in signInWithGoogle)
+          // Don't show error alert for user cancellation
+        }
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to sign in with Google');

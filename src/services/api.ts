@@ -32,7 +32,6 @@ export interface StatusResponse {
   last_active_at: string;
   next_deadline: string;
   seconds_remaining: number;
-  hours_remaining: number;
   status: 'safe' | 'warning' | 'critical' | 'dead';
 }
 

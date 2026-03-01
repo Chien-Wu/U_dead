@@ -81,8 +81,11 @@ export const AddContactScreen = () => {
         await api.addContact(contactData);
       }
 
-      if (onSave) onSave();
-      navigation.goBack();
+      if (onSave) {
+        onSave();
+      } else {
+        navigation.goBack();
+      }
     } catch (error: any) {
       const errorMessage = error?.response?.data?.error?.message || 'Failed to save contact';
       Alert.alert('Error', errorMessage);
