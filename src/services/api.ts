@@ -59,6 +59,8 @@ class APIClient {
   private client: AxiosInstance;
 
   constructor() {
+    console.log('🌐 API Client initialized with baseURL:', API_URL);
+
     this.client = axios.create({
       baseURL: API_URL,
       headers: {
@@ -72,13 +74,32 @@ class APIClient {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // Log request details
+      console.log(`📤 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+      if (config.data) {
+        console.log('   Body:', JSON.stringify(config.data).substring(0, 100));
+      }
+
       return config;
     });
 
     // Handle errors globally
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        // Log successful responses
+        console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+        return response;
+      },
       (error: AxiosError) => {
+        // Log error details
+        console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+        console.error(`   Status: ${error.response?.status}`);
+        console.error(`   Message: ${error.message}`);
+        if (error.response?.data) {
+          console.error('   Response:', JSON.stringify(error.response.data).substring(0, 200));
+        }
+
         if (error.response?.status === 401) {
           // Token expired - clear auth
           SecureStore.deleteItemAsync('auth_token');

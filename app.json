@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.udead.app",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSUserTrackingUsageDescription": "We need permission to schedule reminders when it's time to check in.",
         "UIBackgroundModes": ["remote-notification"]

@@ -41,14 +41,30 @@ export const SettingsScreen = () => {
 
   const fetchData = async () => {
     try {
-      const [contactsData, settingsData] = await Promise.all([
-        api.getContacts(),
-        api.getSettings(),
-      ]);
+      // Fetch contacts (required)
+      const contactsData = await api.getContacts();
       setContacts(contactsData);
-      setCheckinPeriod(settingsData.checkin_period_hours);
-    } catch (error) {
-      console.error("Failed to fetch settings:", error);
+
+      // Fetch settings (optional - use default if endpoint doesn't exist)
+      try {
+        const settingsData = await api.getSettings();
+        setCheckinPeriod(settingsData.checkin_period_hours);
+      } catch (settingsError: any) {
+        if (settingsError.response?.status === 404) {
+          console.warn("⚠️ Settings endpoint not found (404), using default value");
+          // Use default check-in period if endpoint doesn't exist
+          setCheckinPeriod(48);
+        } else {
+          throw settingsError;
+        }
+      }
+    } catch (error: any) {
+      console.error("❌ Failed to fetch settings:", error);
+      if (error.response?.status === 404) {
+        Alert.alert("Backend Error", "Some endpoints are not available. Please check your backend is running.");
+      } else {
+        Alert.alert("Error", "Failed to load settings");
+      }
     } finally {
       setIsLoading(false);
     }
