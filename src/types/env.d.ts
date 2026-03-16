@@ -10,4 +10,6 @@ declare module '@env' {
   export const NOTIFICATION_12H_WARNING: string;
   export const NOTIFICATION_1H_WARNING: string;
   export const ENABLE_MOCK_AUTH: string;
+  export const PRIVACY_POLICY_URL: string;
+  export const TERMS_URL: string;
 }

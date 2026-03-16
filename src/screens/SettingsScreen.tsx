@@ -15,6 +15,7 @@ import {
   useColorScheme,
   Platform,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
@@ -22,6 +23,7 @@ import { Colors } from "../utils/colors";
 import { useAuth } from "../context/AuthContext";
 import { ContactCard } from "../components/ContactCard";
 import api, { Contact } from "../services/api";
+import { PrivacyConfig } from "../config/privacy";
 
 export const SettingsScreen = () => {
   const navigation = useNavigation();
@@ -142,6 +144,44 @@ export const SettingsScreen = () => {
     );
   };
 
+  const handleOpenPrivacyPolicy = async () => {
+    const url = PrivacyConfig.links.privacyPolicyUrl;
+    if (!url) {
+      Alert.alert("Not Available", "Privacy Policy URL has not been configured yet.");
+      return;
+    }
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert("Error", "Cannot open this URL");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to open Privacy Policy");
+    }
+  };
+
+  const handleOpenTerms = async () => {
+    const url = PrivacyConfig.links.termsUrl;
+    if (!url) {
+      Alert.alert("Not Available", "Terms of Service URL has not been configured yet.");
+      return;
+    }
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert("Error", "Cannot open this URL");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to open Terms of Service");
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header with Save and Close actions */}
@@ -252,6 +292,37 @@ export const SettingsScreen = () => {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Legal & Privacy Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Legal & Privacy
+          </Text>
+
+          {PrivacyConfig.links.privacyPolicyUrl && (
+            <TouchableOpacity
+              style={[styles.legalButton, { backgroundColor: theme.card }]}
+              onPress={handleOpenPrivacyPolicy}
+            >
+              <Text style={[styles.legalButtonText, { color: theme.text }]}>
+                {PrivacyConfig.linkLabels.privacyPolicy}
+              </Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+          )}
+
+          {PrivacyConfig.links.termsUrl && (
+            <TouchableOpacity
+              style={[styles.legalButton, { backgroundColor: theme.card }]}
+              onPress={handleOpenTerms}
+            >
+              <Text style={[styles.legalButtonText, { color: theme.text }]}>
+                {PrivacyConfig.linkLabels.terms}
+              </Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -336,5 +407,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     textAlign: "center",
+  },
+  legalButton: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  legalButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  chevron: {
+    fontSize: 24,
+    color: "#8E8E93",
+    fontWeight: "300",
   },
 });

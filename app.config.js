@@ -1,5 +1,10 @@
 import "dotenv/config";
 
+const apiUrl = process.env.API_URL;
+if (!apiUrl) {
+  throw new Error("Missing API_URL environment variable! Build aborted.");
+}
+
 export default {
   expo: {
     name: "U dead??",
@@ -13,26 +18,61 @@ export default {
     splash: {
       image: "./assets/splash-icon.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff",
+      backgroundColor: "#1b91ff",
     },
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.udead.app",
-      infoPlist: {
-        NSUserTrackingUsageDescription:
-          "We need permission to schedule reminders when it's time to check in.",
-        UIBackgroundModes: ["remote-notification"],
+      usesAppleSignIn: true,
+      privacyManifests: {
+        NSPrivacyTracking: false,
+        NSPrivacyTrackingDomains: [],
+        NSPrivacyCollectedDataTypes: [
+          {
+            NSPrivacyCollectedDataType:
+              "NSPrivacyCollectedDataTypeEmailAddress",
+            NSPrivacyCollectedDataTypeLinked: true,
+            NSPrivacyCollectedDataTypeTracking: false,
+            NSPrivacyCollectedDataTypePurposes: [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+            ],
+          },
+          {
+            NSPrivacyCollectedDataType: "NSPrivacyCollectedDataTypeName",
+            NSPrivacyCollectedDataTypeLinked: true,
+            NSPrivacyCollectedDataTypeTracking: false,
+            NSPrivacyCollectedDataTypePurposes: [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+            ],
+          },
+          {
+            NSPrivacyCollectedDataType: "NSPrivacyCollectedDataTypeUserID",
+            NSPrivacyCollectedDataTypeLinked: true,
+            NSPrivacyCollectedDataTypeTracking: false,
+            NSPrivacyCollectedDataTypePurposes: [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+            ],
+          },
+          {
+            NSPrivacyCollectedDataType:
+              "NSPrivacyCollectedDataTypeOtherUserContent",
+            NSPrivacyCollectedDataTypeLinked: true,
+            NSPrivacyCollectedDataTypeTracking: false,
+            NSPrivacyCollectedDataTypePurposes: [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+            ],
+          },
+        ],
       },
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#1b91ff",
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.udead.app",
-      permissions: ["RECEIVE_BOOT_COMPLETED", "VIBRATE", "NOTIFICATIONS"],
     },
     web: {
       favicon: "./assets/favicon.png",
@@ -54,10 +94,13 @@ export default {
       ],
     ],
     extra: {
-      apiUrl: process.env.API_URL || "http://localhost:3000/api/v1",
+      apiUrl,
       googleIosClientId: process.env.GOOGLE_CLIENT_ID_IOS,
       googleAndroidClientId: process.env.GOOGLE_CLIENT_ID_ANDROID,
       googleWebClientId: process.env.GOOGLE_CLIENT_ID_WEB,
+      eas: {
+        projectId: "cab5f6b7-40a4-4539-93c6-3ff4711c811e",
+      },
     },
   },
 };

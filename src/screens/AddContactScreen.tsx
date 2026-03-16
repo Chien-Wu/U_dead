@@ -20,6 +20,8 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Colors } from '../utils/colors';
 import api, { Contact } from '../services/api';
+import { Checkbox } from '../components/Checkbox';
+import { PrivacyConfig } from '../config/privacy';
 
 export const AddContactScreen = () => {
   const navigation = useNavigation();
@@ -35,6 +37,7 @@ export const AddContactScreen = () => {
   const [name, setName] = useState(existingContact?.name || '');
   const [email, setEmail] = useState(existingContact?.email || '');
   const [deathMessage, setDeathMessage] = useState(existingContact?.death_message || '');
+  const [hasConsent, setHasConsent] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const isEditing = !!existingContact;
@@ -63,6 +66,15 @@ export const AddContactScreen = () => {
 
     if (deathMessage.length > 1000) {
       Alert.alert('Error', 'Message must be less than 1000 characters');
+      return;
+    }
+
+    // Privacy consent validation (only for new contacts)
+    if (!isEditing && !hasConsent) {
+      Alert.alert(
+        'Consent Required',
+        'Please confirm that you have obtained consent from this person to use their email for emergency notifications.'
+      );
       return;
     }
 
@@ -174,6 +186,32 @@ export const AddContactScreen = () => {
           </Text>
         </View>
 
+        {/* Privacy & Consent Section */}
+        {!isEditing && (
+          <View style={styles.privacySection}>
+            <Text style={[styles.privacyTitle, { color: theme.text }]}>
+              {PrivacyConfig.contactDisclosure.title}
+            </Text>
+
+            {PrivacyConfig.contactDisclosure.points.map((point, index) => (
+              <View key={index} style={styles.privacyPoint}>
+                <Text style={[styles.bullet, { color: theme.secondaryText }]}>•</Text>
+                <Text style={[styles.privacyText, { color: theme.secondaryText }]}>
+                  {point}
+                </Text>
+              </View>
+            ))}
+
+            <View style={styles.consentCheckbox}>
+              <Checkbox
+                checked={hasConsent}
+                onToggle={() => setHasConsent(!hasConsent)}
+                label={PrivacyConfig.contactDisclosure.consentCheckbox}
+              />
+            </View>
+          </View>
+        )}
+
         {/* Info */}
         <View style={styles.info}>
           <Text style={[styles.infoText, { color: theme.secondaryText }]}>
@@ -234,6 +272,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'right',
     marginTop: 4,
+  },
+  privacySection: {
+    padding: 16,
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  privacyTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  privacyPoint: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    paddingLeft: 4,
+  },
+  bullet: {
+    fontSize: 14,
+    marginRight: 8,
+    lineHeight: 20,
+  },
+  privacyText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  consentCheckbox: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
   info: {
     padding: 16,
