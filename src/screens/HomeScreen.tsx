@@ -22,7 +22,7 @@ import { CheckInButton } from "../components/CheckInButtonSimple";
 import { useStatus, formatTimeRemaining } from "../hooks/useStatus";
 import { useAuth } from "../context/AuthContext";
 import api, { CheckInLog } from "../services/api";
-import { scheduleCheckInReminders } from "../services/pushNotifications";
+import { scheduleCheckInReminders, testNotification } from "../services/pushNotifications";
 
 export const HomeScreen = () => {
   const navigation = useNavigation();
@@ -76,6 +76,12 @@ export const HomeScreen = () => {
   const handleSettings = () => {
     (navigation.navigate as any)("Settings");
   };
+
+  // TEST NOTIFICATION - Remove before production
+  // const handleTestNotification = async () => {
+  //   await testNotification();
+  //   Alert.alert("Test scheduled", "Notification in 2 seconds");
+  // };
 
   // Format time ago for log timestamps
   const formatTimeAgo = (timestamp: string): string => {
@@ -132,6 +138,13 @@ export const HomeScreen = () => {
         <Text style={[styles.timer, { color: theme.text }]}>
           {timeRemaining}
         </Text>
+        {/* TEST NOTIFICATION - Remove before production */}
+        {/* <TouchableOpacity
+          onPress={handleTestNotification}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="notifications-outline" size={28} color={theme.text} />
+        </TouchableOpacity> */}
         <View style={{ width: 28 }} />
       </View>
 

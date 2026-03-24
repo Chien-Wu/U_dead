@@ -139,3 +139,35 @@ export const scheduleCheckInReminders = async (nextDeadline: string): Promise<vo
 export const cancelAllNotifications = async (): Promise<void> => {
   await Notifications.cancelAllScheduledNotificationsAsync();
 };
+
+/**
+ * Test notification - fires in 2 seconds
+ */
+export const testNotification = async (): Promise<void> => {
+  try {
+    console.log('🔔 Checking notification permissions...');
+    const hasPermission = await requestNotificationPermissions();
+    console.log('🔔 Permission status:', hasPermission ? 'GRANTED' : 'DENIED');
+
+    if (!hasPermission) {
+      console.error('❌ Notification permission denied');
+      throw new Error('Notification permission denied');
+    }
+
+    console.log('🔔 Scheduling test notification...');
+    const id = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Test',
+        body: 'Notifications work!',
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 2,
+      },
+    });
+    console.log('✅ Test notification scheduled with ID:', id);
+  } catch (error) {
+    console.error('❌ Failed to schedule test notification:', error);
+    throw error;
+  }
+};

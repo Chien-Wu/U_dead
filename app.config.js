@@ -24,6 +24,9 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.udead.app",
       usesAppleSignIn: true,
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
       privacyManifests: {
         NSPrivacyTracking: false,
         NSPrivacyTrackingDomains: [],
