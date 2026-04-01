@@ -9,7 +9,7 @@ export default {
   expo: {
     name: "U dead??",
     slug: "udead",
-    version: "1.0.0",
+    version: "1.0.1",
     scheme: "udead",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -23,6 +23,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.udead.app",
+      buildNumber: "2",
       usesAppleSignIn: true,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
